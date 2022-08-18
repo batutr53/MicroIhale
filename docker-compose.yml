@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  sourcingdb:
+    image: mongo
+
+  rabbitmq:
+    image: rabbitmq:3-management
+
+  sourcingsqldb:
+    image: mcr.microsoft.com/mssql/server
+
+  microihale.products:
+    image: ${DOCKER_REGISTRY-}microihaleproducts
+    build:
+      context: .
+      dockerfile: MicroIhale.Products/Dockerfile
+
+  microihale.sourcing:
+    image: ${DOCKER_REGISTRY-}microihalesourcing
+    build:
+      context: .
+      dockerfile: MicroIhale.Sourcing/Dockerfile
+
+  microihale.order:
+    image: ${DOCKER_REGISTRY-}microihaleorder
+    build:
+      context: .
+      dockerfile: MicroIhale.Order/Dockerfile
+
+
+  microihale.apigateway:
+    image: ${DOCKER_REGISTRY-}microihaleapigateway
+    build:
+      context: .
+      dockerfile: MicroIhale.APIGateway/Dockerfile
+

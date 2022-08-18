@@ -1,0 +1,69 @@
+version: '3.4'
+
+services:
+  sourcingdb:
+    container_name: sourcingdb
+    restart: always
+    ports:
+      - "27017:27017"
+
+  rabbitmq:
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  sourcingsqldb: 
+    container_name: sourcingsqldb 
+    environment: 
+      SA_PASSWORD: "Odb12345678"
+      ACCEPT_EULA: "Y"
+    ports: 
+      - "1433:1433"
+    
+     
+
+  microihale.products:
+    container_name: microihaleproduct
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - "ProductDatabaseSettings:ConnectionString=mongodb://sourcingdb:27017"
+    depends_on:
+      - sourcingdb
+    ports:
+      - "8000:80"
+  microihale.sourcing:
+    container_name: microihalesourcing
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "SourcingDatabaseSettings:ConnectionString=mongodb://sourcingdb:27017"
+      - "EventBus:HostName=rabbitmq"
+    depends_on:
+      - sourcingdb
+      - rabbitmq
+    ports:
+      - "8001:80"
+
+  microihale.order:
+    container_name: microihaleorder
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "ConnectionStrings:OrderConnection=Server=sourcingsqldb;Database=OrderDb;User Id=sa;Password=Odb12345678"
+      - "EventBus:HostName=rabbitmq"
+    depends_on:
+      - sourcingsqldb
+      - rabbitmq
+    ports:
+      - "8002:80"
+
+  microihale.apigateway:
+    container_name: microihaleapigateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - microihale.products
+      - microihale.sourcing
+      - microihale.order
+    ports:
+      - "5000:80"
