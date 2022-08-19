@@ -1,5 +1,10 @@
 using MicroIhale.Core.Entities;
+using MicroIhale.Core.Repositoires;
+using MicroIhale.Core.Repositoires.Base;
 using MicroIhale.Infrastructure.Data;
+using MicroIhale.Infrastructure.Repository;
+using MicroIhale.Infrastructure.Repository.Base;
+using MicroIhale.UI.Client;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -27,11 +32,22 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(opt =>
 }).AddDefaultTokenProviders().AddEntityFrameworkStores<WebAppContext>();
 builder.Services.AddMvc();
 builder.Services.AddRazorPages();
+builder.Services.AddSession(opt =>
+{
+    opt.IdleTimeout = TimeSpan.FromMinutes(20);
+});
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = $"/Home/Login";
     options.LogoutPath = $"/Home/Logout";
 });
+
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ProductClient>();
+builder.Services.AddHttpClient<AuctionClient>();
+builder.Services.AddHttpClient<BidClient>();
 /*
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options=>
@@ -52,14 +68,14 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.UseAuthentication();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

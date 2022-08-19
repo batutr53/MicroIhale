@@ -40,7 +40,7 @@
     },
     {
       //Auction API
-      "DownstreamPathTemplate": "/api/Auction{id}",
+      "DownstreamPathTemplate": "/api/Auction/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

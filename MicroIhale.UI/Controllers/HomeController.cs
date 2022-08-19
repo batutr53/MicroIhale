@@ -43,8 +43,10 @@ namespace MicroIhale.UI.Controllers
                     var result = await _signInManager.PasswordSignInAsync(user, loginModel.Password, false, false);
 
                     if (result.Succeeded)
-                        //return RedirectToAction("Index");
+                    {
+                        HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
                         return LocalRedirect(returnUrl);
+                    }
                     else
                         ModelState.AddModelError("", "Email address is not valid Or Password");
                 }

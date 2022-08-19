@@ -2,6 +2,7 @@ using EventBusRabbitMQ;
 using EventBusRabbitMQ.Producer;
 using MicroIhale.Sourcing.Data;
 using MicroIhale.Sourcing.Data.Interface;
+using MicroIhale.Sourcing.Hubs;
 using MicroIhale.Sourcing.Mapping;
 using MicroIhale.Sourcing.Repositories;
 using MicroIhale.Sourcing.Repositories.Interfaces;
@@ -52,7 +53,15 @@ builder.Services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
 });
 
 builder.Services.AddSingleton<EventBusRabbitMQProcuder>();
-
+builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+{
+    builder.AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials()
+    .WithOrigins("https://localhost:44300/");
+}));
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -63,7 +72,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
+app.UseCors("CorsPolicy");
+app.MapHub<AuctionHub>("/auctionhub");
 app.MapControllers();
 
 app.Run();
